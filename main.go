@@ -12,56 +12,84 @@ var Ants struct {
 	Start string
 	End   string
 	Rooms []string
-	Links string
+	Links [][]string
 }
 
-var Graph struct {
-	Path []string
-}
+var (
+	mp     = make(map[string][]string)
+	slofsl [][]string
+)
 
 func main() {
 	Readfile()
 	LinksFinder(Ants.Links)
+	FindPath()
 }
 
-func Paths() {
-}
+func FindPath() {
+	var Path []string
 
-func LinksFinder(Links string) {
-	
-	
+	check := make(map[string]bool)
 
-	roomAndLinks := make(map[string][]string)
+	// var Paths [][]string
 
-	for i := 0; i <= len(Links)-1; i++ {
+	for i := 0; i <= len(slofsl)-1; i++ {
+		for j := 0; j <= len(slofsl[i])-1; j++ {
+			if len(Path) == 0 {
+				Path = append(Path, slofsl[i][0])
+				check[slofsl[i][j]] = true
+				Path = append(Path, slofsl[i][j+1])
+			}
+
 		
-		if Links[i] == '*' {
-			continue
-		}
+			
+			if !check[slofsl[i][j]] {
+				if Path[len(Path)-1] == slofsl[i][0] {
+					Path = append(Path, slofsl[i][j+1])
+					check[slofsl[i][j]] = true
+					check[slofsl[i][j+1]] = true
+					i = 0 
+					break
+				}
+			}
+			
 
-		for j := 0; j <= len(Links)-1; j++ {
-			if Links[j] == '*' {
+		}
+	}
+	fmt.Println(Path)
+}
+
+func LinksFinder(Links [][]string) {
+	for _, sl := range Links {
+		for _, str := range sl {
+			_, ok := mp[str]
+			if ok {
 				continue
 			}
-			if Links[i] == Links[j] {
-				if j != len(Links)-1 && Links[j+1] == '*' {
-					roomAndLinks[string(Links[i])] = append(roomAndLinks[string(Links[i])], string(Links[j-1]))
-				} else if j != len(Links)-1 {
-					roomAndLinks[string(Links[i])] = append(roomAndLinks[string(Links[i])], string(Links[j+1]))
+			for _, sl := range Links {
+				for i, str2 := range sl {
+					if str == str2 {
+						if i == 0 {
+							mp[str] = append(mp[str], sl[i+1])
+						} else {
+							mp[str] = append(mp[str], sl[i-1])
+						}
+					}
 				}
 			}
 		}
-		
 	}
 
-	// slFilter := []string{}
+	sl := []string{}
 
-	// for _, l := range sl2 {
-	// 	for _, l2 := range sl2 {
-	// 	}
-	// }
-
-	fmt.Println(roomAndLinks)
+	for room, links := range mp {
+		sl = append(sl, room)
+		sl = append(sl, links...)
+		slofsl = append(slofsl, sl)
+		sl = []string{}
+	}
+	// fmt.Println(mp)
+	fmt.Println(slofsl)
 }
 
 func Readfile() {
@@ -78,8 +106,6 @@ func Readfile() {
 		return
 	}
 	Ants.count = n
-
-	// fmt.Printf("%#v\n", lines)
 
 	for i := 0; i <= len(lines)-1; i++ {
 
@@ -106,15 +132,7 @@ func Readfile() {
 		}
 
 		if strings.Contains(lines[i], "-") {
-			lines[i] = strings.ReplaceAll(lines[i], "-", "")
-			if i != len(lines)-1 {
-				Ants.Links += lines[i] + "*"
-				// fmt.Println(len(lines)-1)
-				// fmt.Println(i)
-			} else {
-				Ants.Links += lines[i]
-			}
-
+			Ants.Links = append(Ants.Links, strings.Split(lines[i], "-"))
 		} else {
 			for j := 0; j <= len(lines[i])-1; j++ {
 				if lines[i][j] == ' ' {
@@ -129,7 +147,32 @@ func Readfile() {
 	// fmt.Println(Ants.Nmala)
 	// fmt.Println(Ants.Start)
 	// fmt.Println(Ants.End)
-	fmt.Printf("%#v\n", Ants.Links)
+	// fmt.Println(Ants.Links)
 	// fmt.Printf("%#v\n",Ants.Rooms)
 	// fmt.Printf("%#v\n",Ants)
+	// fmt.Printf("%#v\n", sl)
 }
+
+// for i := 0; i <= len(slofsl)-1; i++ {
+// 	again:
+// 		for j := 0; j <= len(slofsl[i])-1; j++ {
+// 			if len(Path) != 0 {
+// 				for _, p := range Path {
+// 					if p != slofsl[i][j] {
+// 						if slofsl[i][j] == slofsl[i][0] {
+// 							Path = append(Path, slofsl[i][0])
+// 							Path = append(Path, slofsl[i][j+1])
+// 						}
+// 						if slofsl[i][0] == Path[len(Path)-1] {
+// 							if p != slofsl[i][j] {
+// 								Path = append(Path, slofsl[i][j])
+// 								i = 0
+// 								j = 0
+// 								goto again
+// 							}
+// 						}
+// 					}
+// 				}
+// 			}
+// 			Path = append(Path, slofsl[i][0])
+// 			Path = append(Path, slofsl[i][j])
