@@ -16,50 +16,44 @@ var Ants struct {
 }
 
 var (
-	mp     = make(map[string][]string)
-	slofsl [][]string
+	mp = make(map[string][]string)
+	// slofsl [][]string
+	Paths [][]string
+	Path  []string
+	check = make(map[string]bool)
 )
 
 func main() {
 	Readfile()
-	LinksFinder(Ants.Links)
-	FindPath()
+	Graph := LinksFinder(Ants.Links)
+	FindPath(Graph, Ants.Start, Ants.End, Path, check, &Paths)
 }
 
-func FindPath() {
-	var Path []string
+func FindPath(Graph map[string][]string, start, end string, Path []string, check map[string]bool, Paths *[][]string) {
+	check[start] = true
+	Path = append(Path, start)
 
-	check := make(map[string]bool)
-
-	// var Paths [][]string
-
-	for i := 0; i <= len(slofsl)-1; i++ {
-		for j := 0; j <= len(slofsl[i])-1; j++ {
-			if len(Path) == 0 {
-				Path = append(Path, slofsl[i][0])
-				check[slofsl[i][j]] = true
-				Path = append(Path, slofsl[i][j+1])
+	if start == end {
+		pathCopy := make([]string, len(Path))
+		copy(pathCopy, Path)
+		*Paths = append(*Paths, pathCopy)
+	} else {
+		for _, n := range Graph[start] {
+			if !check[n] {
+				FindPath(Graph, n, Ants.End, Path, check, Paths)
 			}
-
-		
-			
-			if !check[slofsl[i][j]] {
-				if Path[len(Path)-1] == slofsl[i][0] {
-					Path = append(Path, slofsl[i][j+1])
-					check[slofsl[i][j]] = true
-					check[slofsl[i][j+1]] = true
-					i = 0 
-					break
-				}
-			}
-			
-
 		}
 	}
-	fmt.Println(Path)
+
+	if len(Path) > 1 {
+		Path = Path[:len(Path)-1]
+		check[start] = false
+	}
+
+	fmt.Println(Paths)
 }
 
-func LinksFinder(Links [][]string) {
+func LinksFinder(Links [][]string) map[string][]string {
 	for _, sl := range Links {
 		for _, str := range sl {
 			_, ok := mp[str]
@@ -80,16 +74,18 @@ func LinksFinder(Links [][]string) {
 		}
 	}
 
-	sl := []string{}
+	// sl := []string{}
 
-	for room, links := range mp {
-		sl = append(sl, room)
-		sl = append(sl, links...)
-		slofsl = append(slofsl, sl)
-		sl = []string{}
-	}
+	// for room, links := range mp {
+	// 	sl = append(sl, room)
+	// 	sl = append(sl, links...)
+	// 	slofsl = append(slofsl, sl)
+	// 	sl = []string{}
+	// }
 	// fmt.Println(mp)
-	fmt.Println(slofsl)
+	// fmt.Println(slofsl)
+
+	return mp
 }
 
 func Readfile() {
@@ -152,27 +148,3 @@ func Readfile() {
 	// fmt.Printf("%#v\n",Ants)
 	// fmt.Printf("%#v\n", sl)
 }
-
-// for i := 0; i <= len(slofsl)-1; i++ {
-// 	again:
-// 		for j := 0; j <= len(slofsl[i])-1; j++ {
-// 			if len(Path) != 0 {
-// 				for _, p := range Path {
-// 					if p != slofsl[i][j] {
-// 						if slofsl[i][j] == slofsl[i][0] {
-// 							Path = append(Path, slofsl[i][0])
-// 							Path = append(Path, slofsl[i][j+1])
-// 						}
-// 						if slofsl[i][0] == Path[len(Path)-1] {
-// 							if p != slofsl[i][j] {
-// 								Path = append(Path, slofsl[i][j])
-// 								i = 0
-// 								j = 0
-// 								goto again
-// 							}
-// 						}
-// 					}
-// 				}
-// 			}
-// 			Path = append(Path, slofsl[i][0])
-// 			Path = append(Path, slofsl[i][j])
