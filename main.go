@@ -16,57 +16,97 @@ var Ants struct {
 }
 
 var (
-	mp = make(map[string][]string)
-	// slofsl [][]string
+	Graph = make(map[string][]string)
 	Paths [][]string
-	Path  []string
-	check = make(map[string]bool)
 )
 
 func main() {
 	Readfile()
-	Graph := LinksFinder(Ants.Links)
-	FindPath(Graph, Ants.Start, Ants.End, Path, check, &Paths)
+	LinksFinder(Ants.Links)
+	FindPath(Ants.Start, Ants.End)
+	fmt.Println(Paths)
+	FilterPath(Paths)
 }
 
-func FindPath(Graph map[string][]string, start, end string, Path []string, check map[string]bool, Paths *[][]string) {
-	check[start] = true
+func FindPath(start, end string) {
+	visited := make(map[string]bool)
+	Path := []string{}
+	dfs(start, end, visited, Path)
+}
+
+func dfs(start, end string, visited map[string]bool, Path []string) {
+	visited[start] = true
 	Path = append(Path, start)
 
 	if start == end {
+
 		pathCopy := make([]string, len(Path))
 		copy(pathCopy, Path)
-		*Paths = append(*Paths, pathCopy)
+		Paths = append(Paths, pathCopy)
+
 	} else {
-		for _, n := range Graph[start] {
-			if !check[n] {
-				FindPath(Graph, n, Ants.End, Path, check, Paths)
+		for _, neighbor := range Graph[start] {
+			if !visited[neighbor] {
+				dfs(neighbor, Ants.End, visited, Path)
 			}
 		}
 	}
-
-	if len(Path) > 1 {
-		Path = Path[:len(Path)-1]
-		check[start] = false
-	}
-
-	fmt.Println(Paths)
+	// Path = Path[:len(Path)-1]
+	visited[start] = false
 }
 
-func LinksFinder(Links [][]string) map[string][]string {
+func FilterPath(Paths [][]string) {
+	Groupes := [][][]string{}
+
+	Groupe := [][]string{}
+
+	for i := 0; i <= len(Paths)-1; i++ {
+		check := make(map[string]bool)
+		for j := 1; j <= len(Paths[i])-2; j++ {
+			check[Paths[i][j]] = true
+		}
+		Groupe = append(Groupe, Paths[i])
+
+		for i := 0; i <= len(Paths)-1; i++ {
+			if allfalse(Paths[i], check) {
+				Groupe = append(Groupe, Paths[i])
+				for k := 1; k <= len(Paths[i])-2; k++ {
+					check[Paths[i][k]] = true
+				}
+			}
+		}
+		Groupes = append(Groupes, Groupe)
+		Groupe = [][]string{}
+
+	}
+
+	fmt.Println(Groupes)
+
+}
+
+func allfalse(s []string, check map[string]bool) bool {
+	for i := 1; i <= len(s)-2; i++ {
+		if check[s[i]] {
+			return false
+		}
+	}
+	return true
+}
+
+func LinksFinder(Links [][]string) {
 	for _, sl := range Links {
 		for _, str := range sl {
-			_, ok := mp[str]
+			_, ok := Graph[str]
 			if ok {
 				continue
 			}
-			for _, sl := range Links {
-				for i, str2 := range sl {
+			for _, sl1 := range Links {
+				for i, str2 := range sl1 {
 					if str == str2 {
 						if i == 0 {
-							mp[str] = append(mp[str], sl[i+1])
+							Graph[str] = append(Graph[str], sl1[i+1])
 						} else {
-							mp[str] = append(mp[str], sl[i-1])
+							Graph[str] = append(Graph[str], sl1[i-1])
 						}
 					}
 				}
@@ -82,10 +122,8 @@ func LinksFinder(Links [][]string) map[string][]string {
 	// 	slofsl = append(slofsl, sl)
 	// 	sl = []string{}
 	// }
-	// fmt.Println(mp)
+	fmt.Println(Graph)
 	// fmt.Println(slofsl)
-
-	return mp
 }
 
 func Readfile() {
